@@ -24,12 +24,18 @@ def find_best_chunks(question, all_chunks, top_k=3):
     
     return combined_text, pdf_sources
 
-def is_relevant_question(question, keywords=None):
-    if keywords is None:
-        keywords = [
-            "contact lens", "contact lenses", "lens", "lenses", 
-            "coopervision", "reuse", "solution", "wear", "daily", 
-            "toric", "multifocal", "power", "vision", "eye", "ocular","product"
-        ]
-    q_lower = question.lower()
-    return any(kw in q_lower for kw in keywords)
+from llm import call_llm
+
+def is_relevant_question(question, api_key, model):
+    relevance_prompt = f"""
+You are an intelligent filter. Determine if the following question is related to **contact lenses** or their usage, side effects, care, or products.
+
+If it is related, respond with "yes".  
+If it is not related, respond with "no".
+
+Question: "{question}"
+Answer:
+"""
+    answer = call_llm(relevance_prompt.strip(), api_key, model).strip().lower()
+    return "yes" in answer
+

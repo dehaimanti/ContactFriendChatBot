@@ -62,7 +62,7 @@ if api_key and valid_urls:
         # Chat Input
         question = st.chat_input("💬 Ask a question based on the PDFs:")
         if question:
-            if not is_relevant_question(question):
+            if not is_relevant_question(question, api_key, model):
                 answer = "This is not a relevant question related to Contact Lenses. Hence not providing a response."
                 sources = []
             else:
