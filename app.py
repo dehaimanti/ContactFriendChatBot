@@ -54,7 +54,7 @@ if api_key and valid_urls:
 
         if "history" not in st.session_state:
             st.session_state.history = []
-            st.chat_message("assistant").markdown("👋 Hello, I’m **Contact Friend**! How can I help you today?")
+            st.chat_message(name="assistant").markdown("👋 Hello, I’m **Contact Friend**! How can I help you today?")
 
         # Chat Input
         question = st.chat_input("💬 Ask a question based on the PDFs:")
@@ -76,9 +76,9 @@ if api_key and valid_urls:
 
         # Display Chat History with Feedback
         for i, chat in enumerate(st.session_state.history):
-            with st.chat_message("user"):
+            with st.chat_message(name="user", avatar="🙋"):
                 st.write(chat["question"])
-            with st.chat_message("assistant"):
+            with st.chat_message(name="assistant"):
                 st.write(chat["answer"])
                 if chat["sources"]:
                     st.markdown(
