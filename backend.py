@@ -14,31 +14,36 @@ def load_and_store_chunks(pdf_urls):
             store_chunk_in_chroma(chunk)
 
 def process_question(question, api_key, model):
-    """Answer a question using RAG with ChromaDB, with clarification for vague queries and contextual reconstruction"""
-    # Get previous user input (if any)
-    history = [msg["question"] for msg in st.session_state.get("history", [])]
-    previous_question = history[-1] if history else ""
+    """Answer a question using RAG with ChromaDB, with clarification and conversation continuity"""
+    history = st.session_state.get("history", [])
+    previous_question = history[-1]["question"] if history else ""
+    previous_answer = history[-1]["answer"] if history else ""
 
-    # Use LLM to decide if clarification or rephrasing is needed
-    clarification_prompt = f"""
-You are a smart assistant helping a user with questions about contact lenses.
-The user has just asked: "{question}"
-Their previous message was: "{previous_question}"
+    # Rebuild the current question if it's a follow-up
+    context_prompt = f"""
+You are a helpful assistant for answering questions related to contact lenses.
 
-If the current question is vague (e.g., "yes", "okay", "what solution is best"), and you can combine it with the previous message to form a clear query, rephrase it into a complete question about contact lenses.
-Otherwise, just return the current question.
+The previous user question was:
+"{previous_question}"
+And your previous answer was:
+"{previous_answer}"
 
-Output only the rephrased or original full question, nothing else.
-""" 
-    question = call_llm(clarification_prompt.strip(), api_key, model).strip()
+Now the user is asking:
+"{question}"
 
-    if len(question.strip().split()) < 5 and "lens" not in question.lower():
+If the new question is a follow-up, clarify and combine it into a complete new question using the previous context. If it's standalone, return it as-is.
+
+Only output the full updated question.
+"""
+    full_question = call_llm(context_prompt.strip(), api_key, model).strip()
+
+    if len(full_question.strip().split()) < 5 and "lens" not in full_question.lower():
         return ("😅 That’s a bit too vague! Did you mean a good solution for contact lenses, eye care, or something else?", [])
 
-    if not is_relevant_question(question, api_key, model):
+    if not is_relevant_question(full_question, api_key, model):
         return ("🤷‍♀️ That doesn’t sound like a contact lens question. Can you rephrase or be more specific?", [])
 
-    context, sources = find_best_chunks(question)
-    prompt = build_prompt(question, context)
+    context, sources = find_best_chunks(full_question)
+    prompt = build_prompt(full_question, context)
     answer = call_llm(prompt, api_key, model)
     return answer, sources
