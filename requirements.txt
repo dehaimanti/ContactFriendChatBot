@@ -1,4 +1,8 @@
 streamlit
 requests
 scikit-learn
+pdfplumber
 PyMuPDF
+python-dotenv
+chromadb
+sentence-transformers
