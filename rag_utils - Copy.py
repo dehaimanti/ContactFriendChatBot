@@ -28,17 +28,14 @@ from llm import call_llm
 
 def is_relevant_question(question, api_key, model):
     relevance_prompt = f"""
-You are an intelligent filter. Determine if the following question is related to **contact lenses**, including their usage, side effects, care, or products.
+You are an intelligent filter. Determine if the following question is related to **contact lenses** or their usage, side effects, care, or products.
 
-If it is related, respond with only "yes".  
-If it is not related, respond with only "no".
+If it is related, respond with "yes".  
+If it is not related, respond with "no".
 
 Question: "{question}"
-Answer:"""
-    
+Answer:
+"""
     answer = call_llm(relevance_prompt.strip(), api_key, model).strip().lower()
-    answer = answer.split()[0]  # get only the first word
-    
-    print(f"[DEBUG] Relevance Check Answer: {answer}")
+    return "yes" in answer
 
-    return answer == "yes"

@@ -24,23 +24,21 @@ api_key = st.sidebar.text_input(
 model = st.sidebar.selectbox("Choose Model", ["llama3-70b-8192", "mixtral-8x7b-32768"])
 
 # Default PDF URLs
-st.sidebar.markdown("### 🔗 Paste up to 4 PDF HTTPS URLs")
+st.sidebar.markdown("### 🔗 Paste up to 2 PDF HTTPS URLs")
 default_urls = [
     "https://coopervision.com/sites/coopervision.com/files/pi01000_rev_c_avaira_vitality_pi_final.pdf",
-    "https://coopervision.com/sites/coopervision.com/files/pi01099_rev_d_biofinity_family_pi_0.pdf",
-    "https://coopervision.com/sites/coopervision.com/files/media-document/PI01002_Rev%20C_Select%201%20Day_US.pdf",
-    "https://coopervision.com/sites/coopervision.com/files/pi01006_rev_b_ocufilcon_d_toric_generic_pi.pdf"
+    "https://coopervision.com/sites/coopervision.com/files/pi01099_rev_d_biofinity_family_pi_0.pdf"
  ]
 
-# Collect up to 4 PDF URLs
+# Collect up to 2 PDF URLs
 pdf_urls = [
     st.sidebar.text_input(f"PDF Link {i+1}", value=default_urls[i])
-    for i in range(4)
+    for i in range(2)
 ]
 
 # App Title
 st.title("📚 Contact Friend ChatBot")
-st.markdown("Ask questions based on any of the 4 PDFs provided.")
+st.markdown("Ask questions based on any of the 2 PDFs provided.")
 
 # Validate URLs
 valid_urls = [url for url in pdf_urls if url.lower().endswith(".pdf") and url.startswith("https://")]
