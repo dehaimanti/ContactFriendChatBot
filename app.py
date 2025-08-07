@@ -23,20 +23,28 @@ api_key = st.sidebar.text_input(
 # Model selection
 model = st.sidebar.selectbox("Choose Model", ["llama3-70b-8192", "mixtral-8x7b-32768"])
 
+allow_general_advice = st.sidebar.toggle("Allow General Advice if Not in PDF", value=False)
+
+
 # Default PDF URLs
-st.sidebar.markdown("### 🔗 Paste up to 4 PDF HTTPS URLs")
+st.sidebar.markdown("### 🔗 Paste up to 5 PDF HTTPS URLs")
 default_urls = [
     "https://coopervision.com/sites/coopervision.com/files/pi01000_rev_c_avaira_vitality_pi_final.pdf",
     "https://coopervision.com/sites/coopervision.com/files/pi01099_rev_d_biofinity_family_pi_0.pdf",
-    "https://coopervision.com/sites/coopervision.com/files/media-document/PI01002_Rev%20C_Select%201%20Day_US.pdf",
     "https://coopervision.com/sites/coopervision.com/files/pi01006_rev_b_ocufilcon_d_toric_generic_pi.pdf"
  ]
 
-# Collect up to 4 PDF URLs
-pdf_urls = [
-    st.sidebar.text_input(f"PDF Link {i+1}", value=default_urls[i])
-    for i in range(4)
-]
+# Collect 3 pre-filled + 2 blank slots
+pdf_urls = []
+for i in range(5):
+    if i < 3:
+        pdf_urls.append(
+            st.sidebar.text_input(f"PDF Link {i+1}", value=default_urls[i])
+        )
+    else:
+        pdf_urls.append(
+            st.sidebar.text_input(f"PDF Link {i+1}", value="")
+        )
 
 # App Title
 st.title("📚 Contact Friend ChatBot")
@@ -67,7 +75,7 @@ if api_key and valid_urls:
             else:
                 with st.spinner("🤖 Thinking..."):
                     context, sources = find_best_chunks(question, all_chunks)
-                    prompt = build_prompt(question, context)
+                    prompt = build_prompt(question, context, allow_general_advice)
                     answer = call_llm(prompt, api_key, model)
 
             st.session_state.history.append({
