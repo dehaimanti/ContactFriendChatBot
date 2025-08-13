@@ -25,13 +25,14 @@ model = st.sidebar.selectbox("Choose Model", ["llama3-70b-8192", "mixtral-8x7b-3
 
 allow_general_advice = st.sidebar.toggle("Allow General Advice if Not in PDF", value=False)
 
+
 # Default PDF URLs
 st.sidebar.markdown("### 🔗 Paste up to 5 PDF HTTPS URLs")
 default_urls = [
     "https://coopervision.com/sites/coopervision.com/files/pi01000_rev_c_avaira_vitality_pi_final.pdf",
     "https://coopervision.com/sites/coopervision.com/files/pi01099_rev_d_biofinity_family_pi_0.pdf",
     "https://coopervision.com/sites/coopervision.com/files/pi01006_rev_b_ocufilcon_d_toric_generic_pi.pdf"
-]
+ ]
 
 # Collect 3 pre-filled + 2 blank slots
 pdf_urls = []
@@ -47,7 +48,7 @@ for i in range(5):
 
 # App Title
 st.title("📚 Contact Friend ChatBot")
-st.markdown("Ask questions based on any of the PDFs provided. I can remember our conversation for follow-up questions.")
+st.markdown("Ask questions based on any of the 4 PDFs provided.")
 
 # Validate URLs
 valid_urls = [url for url in pdf_urls if url.lower().endswith(".pdf") and url.startswith("https://")]
@@ -68,50 +69,40 @@ if api_key and valid_urls:
         # Chat Input
         question = st.chat_input("💬 Ask a question based on the PDFs:")
         if question:
-            # Add the user message to history
-            st.session_state.history.append({"role": "user", "content": question})
-
-            # Create conversation string from history
-            conversation_context = "\n".join(
-                f"{msg['role'].capitalize()}: {msg['content']}"
-                for msg in st.session_state.history
-            )
-
-            # Relevance check (optional: pass full conversation or just last question)
-            full_query_for_relevance = conversation_context  # includes past Q&A
-            if not is_relevant_question(full_query_for_relevance, api_key, model):
+            if not is_relevant_question(question, api_key, model):
                 answer = "This is not a relevant question related to Contact Lenses. Hence not providing a response."
                 sources = []
             else:
                 with st.spinner("🤖 Thinking..."):
                     context, sources = find_best_chunks(question, all_chunks)
-                    prompt = build_prompt(conversation_context, context, allow_general_advice)
+                    prompt = build_prompt(question, context, allow_general_advice)
                     answer = call_llm(prompt, api_key, model)
 
-            # Add assistant reply to history
-            st.session_state.history.append({"role": "assistant", "content": answer, "sources": sources})
+            st.session_state.history.append({
+                "question": question,
+                "answer": answer,
+                "sources": sources
+            })
 
         # Display Chat History with Feedback
         for i, chat in enumerate(st.session_state.history):
-            if chat["role"] == "user":
-                with st.chat_message(name="user", avatar="🙋"):
-                    st.write(chat["content"])
-            elif chat["role"] == "assistant":
-                with st.chat_message(name="assistant"):
-                    st.write(chat["content"])
-                    if chat.get("sources"):
-                        st.markdown(
-                            f"<div style='font-size: 0.85em; color: gray'>📄 Sources: {', '.join(chat['sources'])}</div>",
-                            unsafe_allow_html=True)
+            with st.chat_message(name="user", avatar="🙋"):
+                st.write(chat["question"])
+            with st.chat_message(name="assistant"):
+                st.write(chat["answer"])
+                if chat["sources"]:
+                    st.markdown(
+                        f"<div style='font-size: 0.85em; color: gray'>📄 Sources: {', '.join(chat['sources'])}</div>",
+                        unsafe_allow_html=True)
 
-                    # Feedback buttons 👍👎
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.button("👍 Thumbs Up", key=f"thumbs_up_{i}"):
-                            st.success("Thanks for the 👍!")
-                    with col2:
-                        if st.button("👎 Thumbs Down", key=f"thumbs_down_{i}"):
-                            st.warning("Got it 👎! We'll try to do better.")
+                # Feedback buttons 👍👎
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("👍 Thumbs Up", key=f"thumbs_up_{i}"):
+                        st.success("Thanks for the 👍!")
+                with col2:
+                    if st.button("👎 Thumbs Down", key=f"thumbs_down_{i}"):
+                        st.warning("Got it 👎! We'll try to do better.")
 
     except Exception as e:
         st.error(f"❌ Error: {e}")

@@ -1,14 +1,9 @@
-def build_prompt(conversation, context, allow_general_advice=False):
-    """
-    Build a prompt that includes the full conversation so far
-    plus the most relevant PDF context.
-    """
+def build_prompt(question, context, allow_general_advice=False):
     extra_note = """
 If the answer is not clearly available in the context, just say:  
 **"I don't have this information."**
 """ if not allow_general_advice else """
-If the answer is not available in the context, you may provide general safe advice based on common knowledge — 
-but clearly mention it is **general** and **not from the provided documents**.
+If the answer is not available in the context, you may provide general safe advice based on common knowledge — but clearly mention it is **general** and **not from the provided documents**.
 """
 
     return f"""
@@ -18,11 +13,11 @@ Use the information in the PDFs provided as your **primary source**.
 
 {extra_note}
 
-🗨 Conversation so far:
-{conversation}
-
-📄 Relevant PDF Context:
+📄 Context:
 {context}
+
+❓ Question:
+{question}
 
 💬 Answer:
 Please format your answer using:
